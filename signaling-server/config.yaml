@@ -1,0 +1,15 @@
+server:
+  host: 0.0.0.0
+  port: 8080
+
+livestream:
+  url: "rtsp://your-livestream-url"
+
+logging:
+  level: "info"
+
+ice_servers:
+  - urls: "stun:stun.l.google.com:19302"
+  - urls: "turn:turn.example.com"
+    username: "user"
+    credential: "pass"

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebRTC Livestream Viewer</title>
+</head>
+<body>
+    <h1>WebRTC Livestream Viewer</h1>
+    <video id="remoteVideo" autoplay playsinline></video>
+    <script>
+        const signalingServerUrl = "ws://localhost:8080";  // Signaling server URL
+        const pc = new RTCPeerConnection();
+
+        // Get the video element
+        const remoteVideo = document.getElementById("remoteVideo");
+
+        // Connect to the WebSocket signaling server
+        const socket = new WebSocket(signalingServerUrl);
+
+        socket.onmessage = async (event) => {
+            const message = JSON.parse(event.data);
+
+            if (message.type === "offer") {
+                await pc.setRemoteDescription(new RTCSessionDescription(message));
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+
+                // Send the answer back to the signaling server
+                socket.send(JSON.stringify(pc.localDescription));
+            } else if (message.type === "candidate") {
+                await pc.addIceCandidate(new RTCIceCandidate(message.candidate));
+            }
+        };
+
+        // When a track is received, attach it to the video element
+        pc.ontrack = (event) => {
+            remoteVideo.srcObject = event.streams[0];
+        };
+    </script>
+</body>
+</html>

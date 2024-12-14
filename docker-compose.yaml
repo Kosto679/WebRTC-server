@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  signaling-server:
+    build:
+      context: ./signaling-server
+    container_name: webrtc_signaling_server
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: ./nginx  # Directory containing the custom Dockerfile
+    container_name: nginx_server
+    ports:
+      - "8081:80"  # Use port 8081 for NGINX
+    restart: unless-stopped
+
+  gstreamer-stream:
+    build:
+      context: ./gstreamer-stream
+    container_name: gstreamer_stream
+    depends_on:
+      - signaling-server
+    environment:
+      SIGNALING_SERVER: "ws://webrtc_signaling_server:8080/ws"
+    restart: unless-stopped
